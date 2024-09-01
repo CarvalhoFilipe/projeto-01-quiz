@@ -1,15 +1,32 @@
 import { MouseEvent, useCallback, useState } from 'react'
 import { QuestionAnswer } from '../QuestionAnswer'
-import S from './styles.module.css'
 import { questions } from '../../mock/questions'
+import { Button } from '../Button'
+
+import S from './styles.module.css'
 
 export function Quiz() {
-  const [current] = useState(0)
+  const [current, setCurrent] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [isCurrentQuestionAnswered, setIsCurrentQuestionAnswered] =
     useState(false)
   console.log(correctAnswers, 'correctAnswers')
   const currentQuestion = questions[current]
+
+  const removeClassNames = () => {
+    const buttons = document.querySelectorAll(`.${S.answers} button`)
+    buttons.forEach((button) => {
+      button.classList.remove(S.correct, S.incorrect)
+    })
+  }
+
+  const handleClickNextAnswer = useCallback(() => {
+    removeClassNames()
+    if (current + 1 < questions.length) {
+      setCurrent((prevState) => prevState + 1)
+    }
+    setIsCurrentQuestionAnswered(false)
+  }, [current])
 
   const checkAnswer = useCallback(
     (answerId: number) => {
@@ -53,6 +70,9 @@ export function Quiz() {
               </li>
             ))}
           </ul>
+          {isCurrentQuestionAnswered && (
+            <Button onClick={handleClickNextAnswer} title="Próxima Pergunta" />
+          )}
         </div>
       </div>
     </div>
