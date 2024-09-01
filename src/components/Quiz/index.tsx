@@ -4,14 +4,18 @@ import { questions } from '../../mock/questions'
 import { Button } from '../Button'
 
 import S from './styles.module.css'
+import { Result } from '../Result'
 
 export function Quiz() {
   const [current, setCurrent] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [isCurrentQuestionAnswered, setIsCurrentQuestionAnswered] =
     useState(false)
+  const [isTalkingQuiz, setIsTalkingQuiz] = useState(true)
   console.log(correctAnswers, 'correctAnswers')
   const currentQuestion = questions[current]
+  const buttonText =
+    current + 1 === questions.length ? 'Ver resultado' : 'Próxima pergunta'
 
   const removeClassNames = () => {
     const buttons = document.querySelectorAll(`.${S.answers} button`)
@@ -24,9 +28,18 @@ export function Quiz() {
     removeClassNames()
     if (current + 1 < questions.length) {
       setCurrent((prevState) => prevState + 1)
+    } else {
+      setIsTalkingQuiz(false)
     }
     setIsCurrentQuestionAnswered(false)
   }, [current])
+
+  const handleTryAgain = useCallback(() => {
+    setIsCurrentQuestionAnswered(false)
+    setCorrectAnswers(0)
+    setCurrent(0)
+    setIsTalkingQuiz(true)
+  }, [])
 
   const checkAnswer = useCallback(
     (answerId: number) => {
@@ -52,28 +65,36 @@ export function Quiz() {
   return (
     <div className={S.container}>
       <div className={S.card}>
-        <div className={S.quiz}>
-          <header className={S.quizHeader}>
-            <span className={S.questionCount}>
-              Pergunta {current + 1}/{questions.length}
-            </span>
-            <p className={S.question}>{currentQuestion.question}</p>
-          </header>
+        {isTalkingQuiz ? (
+          <div className={S.quiz}>
+            <header className={S.quizHeader}>
+              <span className={S.questionCount}>
+                Pergunta {current + 1}/{questions.length}
+              </span>
+              <p className={S.question}>{currentQuestion.question}</p>
+            </header>
 
-          <ul className={S.answers}>
-            {currentQuestion.answers.map((answer) => (
-              <li key={answer.id}>
-                <QuestionAnswer
-                  answer={answer}
-                  handleAnswerQuestion={handleAnswerQuestion}
-                />
-              </li>
-            ))}
-          </ul>
-          {isCurrentQuestionAnswered && (
-            <Button onClick={handleClickNextAnswer} title="Próxima Pergunta" />
-          )}
-        </div>
+            <ul className={S.answers}>
+              {currentQuestion.answers.map((answer) => (
+                <li key={answer.id}>
+                  <QuestionAnswer
+                    answer={answer}
+                    handleAnswerQuestion={handleAnswerQuestion}
+                  />
+                </li>
+              ))}
+            </ul>
+            {isCurrentQuestionAnswered && (
+              <Button onClick={handleClickNextAnswer} title={buttonText} />
+            )}
+          </div>
+        ) : (
+          <Result
+            correctAnswersCount={correctAnswers}
+            quizSize={questions.length}
+            handleTryAgain={handleTryAgain}
+          />
+        )}
       </div>
     </div>
   )
